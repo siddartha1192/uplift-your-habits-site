@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				habit: {
+					DEFAULT: '#4ECDC4',
+					light: '#A7E8BD',
+					dark: '#177E89'
+				},
+				journal: {
+					DEFAULT: '#9B87F5',
+					light: '#D6BCFA',
+					dark: '#6E59A5'
+				},
+				goal: {
+					DEFAULT: '#FF7F50',
+					light: '#FFBE76',
+					dark: '#E67E22'
 				}
 			},
 			borderRadius: {
@@ -84,11 +100,27 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'check-mark': {
+					'0%': { 
+						transform: 'scale(0)',
+						opacity: '0'
+					},
+					'100%': { 
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'progress-fill': {
+					'0%': { width: '0%' },
+					'100%': { width: 'var(--progress-width)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'check-mark': 'check-mark 0.3s ease-out',
+				'progress-fill': 'progress-fill 1s ease-out forwards'
 			}
 		}
 	},
