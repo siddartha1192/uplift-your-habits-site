@@ -30,9 +30,9 @@ const Navigation: React.FC = () => {
   ];
 
   return (
-    <nav className="flex justify-between items-center p-4 bg-white border-b md:px-8 shadow-sm">
+    <nav className="flex justify-between items-center p-4 bg-white border-b md:px-8 shadow-sm sticky top-0 z-10">
       <div className="flex items-center">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-habit to-goal bg-clip-text text-transparent">
+        <h1 className="text-xl font-bold bg-gradient-to-r from-habit to-goal bg-clip-text text-transparent hover:scale-105 transition-transform cursor-pointer" onClick={() => setActiveTab("dashboard")}>
           Uplift
         </h1>
       </div>
@@ -42,13 +42,13 @@ const Navigation: React.FC = () => {
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id as any)}
-            className={`flex items-center px-3 py-2 rounded-md text-sm transition-colors ${
+            className={`flex items-center px-3 py-2 rounded-md text-sm transition-all duration-300 ${
               activeTab === item.id
-                ? "bg-primary/10 text-primary font-medium"
+                ? "bg-primary/10 text-primary font-medium scale-105"
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            <span className="mr-1.5">{item.icon}</span>
+            <span className={`mr-1.5 transition-transform duration-300 ${activeTab === item.id ? "scale-110" : "scale-100"}`}>{item.icon}</span>
             <span className="hidden md:inline">{item.label}</span>
           </button>
         ))}
