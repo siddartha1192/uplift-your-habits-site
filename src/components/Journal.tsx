@@ -20,27 +20,73 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Calendar, Trash2, X } from "lucide-react";
+import { PlusCircle, BookOpen, Calendar, Pencil, X } from "lucide-react";
 
 const Journal: React.FC = () => {
   const { journalEntries, addJournalEntry, deleteJournalEntry } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [newEntry, setNewEntry] = useState({
     title: "",
     content: "",
     mood: undefined as undefined | "great" | "good" | "neutral" | "bad" | "terrible",
   });
 
-  // Create a journal entry
-  const handleCreateEntry = () => {
+  // Open edit dialog with entry data
+  const handleEditEntry = (entry: JournalEntry) => {
+    setNewEntry({
+      title: entry.title,
+      content: entry.content,
+      mood: entry.mood,
+    });
+    setEditingEntryId(entry.id);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  };
+
+  // Create or update a journal entry
+  const handleSaveEntry = () => {
     if (newEntry.title.trim() && newEntry.content.trim()) {
-      addJournalEntry(newEntry);
+      if (isEditMode && editingEntryId) {
+        // Delete the old entry and add the updated one with the same ID and date
+        const entryToEdit = journalEntries.find(entry => entry.id === editingEntryId);
+        if (entryToEdit) {
+          deleteJournalEntry(editingEntryId);
+          addJournalEntry({
+            ...newEntry,
+            id: editingEntryId,
+            date: entryToEdit.date,
+          } as any);
+        }
+      } else {
+        // Create new entry
+        addJournalEntry(newEntry);
+      }
+      
+      // Reset form
       setNewEntry({
         title: "",
         content: "",
         mood: undefined,
       });
+      setIsEditMode(false);
+      setEditingEntryId(null);
       setIsDialogOpen(false);
+    }
+  };
+
+  // Reset form when dialog closes
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setNewEntry({
+        title: "",
+        content: "",
+        mood: undefined,
+      });
+      setIsEditMode(false);
+      setEditingEntryId(null);
     }
   };
 
@@ -63,7 +109,7 @@ const Journal: React.FC = () => {
     <div className="p-4 md:p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Your Journal</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button className="bg-journal hover:bg-journal-dark">
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -72,7 +118,7 @@ const Journal: React.FC = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Journal Entry</DialogTitle>
+              <DialogTitle>{isEditMode ? "Edit Journal Entry" : "Create Journal Entry"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -129,8 +175,8 @@ const Journal: React.FC = () => {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreateEntry} className="bg-journal hover:bg-journal-dark">
-                Save Entry
+              <Button onClick={handleSaveEntry} className="bg-journal hover:bg-journal-dark">
+                {isEditMode ? "Save Changes" : "Save Entry"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -165,6 +211,7 @@ const Journal: React.FC = () => {
                     key={entry.id}
                     entry={entry}
                     onDelete={deleteJournalEntry}
+                    onEdit={handleEditEntry}
                   />
                 ))}
               </div>
@@ -179,11 +226,13 @@ const Journal: React.FC = () => {
 interface JournalEntryCardProps {
   entry: JournalEntry;
   onDelete: (entryId: string) => void;
+  onEdit: (entry: JournalEntry) => void;
 }
 
 const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   entry,
   onDelete,
+  onEdit,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -222,12 +271,22 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
               <span>{formattedDate}</span>
             </div>
           </div>
-          <button 
-            onClick={() => onDelete(entry.id)}
-            className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => onEdit(entry)}
+              className="text-muted-foreground hover:text-journal transition-colors p-1 rounded-full hover:bg-muted"
+              aria-label="Edit entry"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => onDelete(entry.id)}
+              className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
+              aria-label="Delete entry"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         
         <div className="px-4 pb-4">

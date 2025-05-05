@@ -38,10 +38,10 @@ type AppContextType = {
   habits: Habit[];
   journalEntries: JournalEntry[];
   goals: Goal[];
-  addHabit: (habit: Omit<Habit, "id" | "daysCompleted" | "createdAt" | "streak">) => void;
+  addHabit: (habit: Omit<Habit, "id" | "daysCompleted" | "createdAt" | "streak"> | Habit) => void;
   toggleHabitCompletion: (habitId: string, date: string) => void;
-  addJournalEntry: (entry: Omit<JournalEntry, "id" | "date">) => void;
-  addGoal: (goal: Omit<Goal, "id" | "createdAt" | "completed">) => void;
+  addJournalEntry: (entry: Omit<JournalEntry, "id" | "date"> | JournalEntry) => void;
+  addGoal: (goal: Omit<Goal, "id" | "createdAt" | "completed"> | Goal) => void;
   updateGoalProgress: (goalId: string, progress: number) => void;
   toggleTaskCompletion: (goalId: string, taskId: string) => void;
   deleteHabit: (habitId: string) => void;
@@ -163,15 +163,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [goals]);
 
   // Habit functions
-  const addHabit = (habit: Omit<Habit, "id" | "daysCompleted" | "createdAt" | "streak">) => {
-    const newHabit: Habit = {
-      ...habit,
-      id: `h${Date.now()}`,
-      daysCompleted: [],
-      createdAt: new Date().toISOString(),
-      streak: 0,
-    };
-    setHabits([...habits, newHabit]);
+  const addHabit = (habit: Omit<Habit, "id" | "daysCompleted" | "createdAt" | "streak"> | Habit) => {
+    // Check if this is an edit (has an id) or a new habit
+    if ('id' in habit && habit.id) {
+      // This is an edit, replace the existing habit
+      setHabits(habits.map(h => h.id === habit.id ? habit as Habit : h));
+    } else {
+      // This is a new habit
+      const newHabit: Habit = {
+        ...(habit as Omit<Habit, "id" | "daysCompleted" | "createdAt" | "streak">),
+        id: `h${Date.now()}`,
+        daysCompleted: [],
+        createdAt: new Date().toISOString(),
+        streak: 0,
+      };
+      setHabits([...habits, newHabit]);
+    }
   };
 
   const toggleHabitCompletion = (habitId: string, date: string) => {
@@ -243,13 +250,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Journal functions
-  const addJournalEntry = (entry: Omit<JournalEntry, "id" | "date">) => {
-    const newEntry: JournalEntry = {
-      ...entry,
-      id: `j${Date.now()}`,
-      date: new Date().toISOString(),
-    };
-    setJournalEntries([...journalEntries, newEntry]);
+  const addJournalEntry = (entry: Omit<JournalEntry, "id" | "date"> | JournalEntry) => {
+    // Check if this is an edit (has an id) or a new entry
+    if ('id' in entry && entry.id) {
+      // This is an edit, replace the existing entry
+      setJournalEntries(entries => 
+        entries.map(e => e.id === entry.id ? entry as JournalEntry : e)
+      );
+    } else {
+      // This is a new entry
+      const newEntry: JournalEntry = {
+        ...(entry as Omit<JournalEntry, "id" | "date">),
+        id: `j${Date.now()}`,
+        date: new Date().toISOString(),
+      };
+      setJournalEntries([...journalEntries, newEntry]);
+    }
   };
 
   const deleteJournalEntry = (entryId: string) => {
@@ -257,14 +273,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Goal functions
-  const addGoal = (goal: Omit<Goal, "id" | "createdAt" | "completed">) => {
-    const newGoal: Goal = {
-      ...goal,
-      id: `g${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      completed: false,
-    };
-    setGoals([...goals, newGoal]);
+  const addGoal = (goal: Omit<Goal, "id" | "createdAt" | "completed"> | Goal) => {
+    // Check if this is an edit (has an id) or a new goal
+    if ('id' in goal && goal.id) {
+      // This is an edit, replace the existing goal
+      setGoals(goals.map(g => g.id === goal.id ? goal as Goal : g));
+    } else {
+      // This is a new goal
+      const newGoal: Goal = {
+        ...(goal as Omit<Goal, "id" | "createdAt" | "completed">),
+        id: `g${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        completed: false,
+      };
+      setGoals([...goals, newGoal]);
+    }
   };
 
   const updateGoalProgress = (goalId: string, progress: number) => {

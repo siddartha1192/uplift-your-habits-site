@@ -15,11 +15,13 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PlusCircle, Target, Calendar, Trophy, X, Plus } from "lucide-react";
+import { PlusCircle, Target, Calendar, Trophy, Pencil, X, Plus } from "lucide-react";
 
 const Goals: React.FC = () => {
   const { goals, addGoal, toggleTaskCompletion, deleteGoal } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState({
     title: "",
     description: "",
@@ -28,6 +30,20 @@ const Goals: React.FC = () => {
     progress: 0,
   });
   const [newTaskTitle, setNewTaskTitle] = useState("");
+
+  // Open edit dialog with goal data
+  const handleEditGoal = (goal: Goal) => {
+    setNewGoal({
+      title: goal.title,
+      description: goal.description,
+      targetDate: new Date(goal.targetDate).toISOString().split('T')[0],
+      tasks: [...goal.tasks], // Create a copy of tasks
+      progress: goal.progress,
+    });
+    setEditingGoalId(goal.id);
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  };
 
   // Add task to new goal
   const handleAddTask = () => {
@@ -55,10 +71,35 @@ const Goals: React.FC = () => {
     });
   };
 
-  // Create a goal
-  const handleCreateGoal = () => {
+  // Create or update a goal
+  const handleSaveGoal = () => {
     if (newGoal.title.trim() && newGoal.targetDate) {
-      addGoal(newGoal);
+      if (isEditMode && editingGoalId) {
+        // Delete old goal and add updated one with same ID and creation date
+        const goalToEdit = goals.find(goal => goal.id === editingGoalId);
+        if (goalToEdit) {
+          deleteGoal(editingGoalId);
+          
+          // Calculate progress based on completed tasks
+          const completedTasks = newGoal.tasks.filter(task => task.completed).length;
+          const progress = newGoal.tasks.length > 0 
+            ? Math.round((completedTasks / newGoal.tasks.length) * 100) 
+            : 0;
+          
+          addGoal({
+            ...newGoal,
+            id: editingGoalId,
+            progress: progress,
+            createdAt: goalToEdit.createdAt,
+            completed: progress === 100,
+          } as any);
+        }
+      } else {
+        // Create new goal
+        addGoal(newGoal);
+      }
+      
+      // Reset form
       setNewGoal({
         title: "",
         description: "",
@@ -66,7 +107,26 @@ const Goals: React.FC = () => {
         tasks: [],
         progress: 0,
       });
+      setIsEditMode(false);
+      setEditingGoalId(null);
       setIsDialogOpen(false);
+    }
+  };
+
+  // Reset form when dialog closes
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setNewGoal({
+        title: "",
+        description: "",
+        targetDate: "",
+        tasks: [],
+        progress: 0,
+      });
+      setNewTaskTitle("");
+      setIsEditMode(false);
+      setEditingGoalId(null);
     }
   };
 
@@ -78,7 +138,7 @@ const Goals: React.FC = () => {
     <div className="p-4 md:p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Your Goals</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button className="bg-goal hover:bg-goal-dark">
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -87,7 +147,7 @@ const Goals: React.FC = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create a New Goal</DialogTitle>
+              <DialogTitle>{isEditMode ? "Edit Goal" : "Create a New Goal"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -155,7 +215,22 @@ const Goals: React.FC = () => {
                         key={task.id}
                         className="flex items-center justify-between bg-muted/50 p-2 rounded"
                       >
-                        <span>{task.title}</span>
+                        <div className="flex items-center">
+                          <Checkbox
+                            id={`new-task-${task.id}`}
+                            checked={task.completed}
+                            onCheckedChange={() => {
+                              setNewGoal({
+                                ...newGoal,
+                                tasks: newGoal.tasks.map(t => 
+                                  t.id === task.id ? { ...t, completed: !t.completed } : t
+                                )
+                              });
+                            }}
+                            className="mr-2 data-[state=checked]:bg-goal data-[state=checked]:border-goal"
+                          />
+                          <span>{task.title}</span>
+                        </div>
                         <button
                           onClick={() => handleRemoveTask(task.id)}
                           className="text-muted-foreground hover:text-destructive"
@@ -172,8 +247,8 @@ const Goals: React.FC = () => {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreateGoal} className="bg-goal hover:bg-goal-dark">
-                Create Goal
+              <Button onClick={handleSaveGoal} className="bg-goal hover:bg-goal-dark">
+                {isEditMode ? "Save Changes" : "Create Goal"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -212,6 +287,7 @@ const Goals: React.FC = () => {
                     goal={goal}
                     onToggleTask={toggleTaskCompletion}
                     onDelete={deleteGoal}
+                    onEdit={handleEditGoal}
                   />
                 ))}
               </div>
@@ -229,6 +305,7 @@ const Goals: React.FC = () => {
                     goal={goal}
                     onToggleTask={toggleTaskCompletion}
                     onDelete={deleteGoal}
+                    onEdit={handleEditGoal}
                   />
                 ))}
               </div>
@@ -244,12 +321,14 @@ interface GoalCardProps {
   goal: Goal;
   onToggleTask: (goalId: string, taskId: string) => void;
   onDelete: (goalId: string) => void;
+  onEdit: (goal: Goal) => void;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({
   goal,
   onToggleTask,
   onDelete,
+  onEdit,
 }) => {
   const targetDate = new Date(goal.targetDate);
   const daysLeft = Math.ceil((targetDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -280,12 +359,22 @@ const GoalCard: React.FC<GoalCardProps> = ({
             </h3>
             <p className="text-muted-foreground text-sm">{goal.description}</p>
           </div>
-          <button 
-            onClick={() => onDelete(goal.id)}
-            className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => onEdit(goal)}
+              className="text-muted-foreground hover:text-goal transition-colors p-1 rounded-full hover:bg-muted"
+              aria-label="Edit goal"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => onDelete(goal.id)}
+              className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
+              aria-label="Delete goal"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         
         {/* Goal progress */}
