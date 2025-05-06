@@ -1,7 +1,6 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { CircleHalf } from "lucide-react";
 
 export interface CircularProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number;
@@ -17,7 +16,7 @@ const CircularProgress = React.forwardRef<HTMLDivElement, CircularProgressProps>
   ({ 
     value = 0, 
     size = 64, 
-    strokeWidth = 4, 
+    strokeWidth = 6, // Increased stroke width for more visibility
     showPercentage = true,
     color = "bg-primary text-primary-foreground",
     indicatorColor,

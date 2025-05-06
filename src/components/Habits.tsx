@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAppContext, Habit } from "@/contexts/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -208,16 +207,10 @@ const HabitCard: React.FC<HabitCardProps> = ({
           </button>
         </div>
         
-        {/* Habit stats with circular progress */}
-        <div className="px-4 pb-2 flex items-center gap-4">
-          <CircularProgress 
-            value={completionRate} 
-            size={48} 
-            indicatorColor="stroke-habit" 
-            className="animate-fade-in"
-          />
+        {/* Habit stats with circular progress - updated layout */}
+        <div className="px-4 pb-2 flex items-center justify-between">
           <div className="flex flex-col">
-            <div className="flex items-center text-sm">
+            <div className="flex items-center text-sm mb-1">
               <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
               <span>{habit.frequency}</span>
             </div>
@@ -228,6 +221,14 @@ const HabitCard: React.FC<HabitCardProps> = ({
               </span>
             </div>
           </div>
+          
+          <CircularProgress 
+            value={completionRate} 
+            size={60} 
+            strokeWidth={6}
+            indicatorColor="stroke-habit" 
+            className="animate-fade-in"
+          />
         </div>
         
         {/* Last 7 days tracker */}

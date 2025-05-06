@@ -60,23 +60,25 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Completion Today</span>
+                    <span className="text-xl font-semibold ml-2">{habitsCompletedToday}/{habits.length}</span>
+                  </div>
+                  <div className="flex items-center group">
+                    <span className="text-habit-dark group-hover:underline transition-all flex items-center">
+                      Manage Habits <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </div>
                 <CircularProgress 
                   value={habitCompletionRate} 
-                  size={100}
-                  strokeWidth={6}
+                  size={80}
+                  strokeWidth={8}
                   indicatorColor="stroke-habit" 
-                  className="animate-fade-in my-2"
+                  className="animate-fade-in"
                 />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Completion Today</span>
-                <span className="text-xl font-semibold">{habitsCompletedToday}/{habits.length}</span>
-              </div>
-              <div className="flex items-center justify-center group">
-                <span className="text-habit-dark group-hover:underline transition-all flex items-center">
-                  Manage Habits <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
               </div>
             </div>
           </CardContent>
@@ -96,43 +98,45 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-center">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Entries</span>
+                    <span className="text-xl font-semibold ml-2">{journalEntries.length}</span>
+                  </div>
+                  <div className="h-8 flex items-center">
+                    {hasJournalEntryToday ? (
+                      <span className="text-green-600 font-medium flex items-center">
+                        <CheckCircle2 className="mr-1 h-4 w-4" />
+                        Entry added today
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">No entry today</span>
+                    )}
+                  </div>
+                  <div className="flex items-center group">
+                    <span className="text-journal-dark group-hover:underline transition-all flex items-center">
+                      View Journal <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </div>
                 <div className="relative">
                   <CircularProgress 
                     value={hasJournalEntryToday ? 100 : 0} 
-                    size={100}
-                    strokeWidth={6}
+                    size={80}
+                    strokeWidth={8}
                     showPercentage={false}
                     indicatorColor="stroke-journal" 
-                    className="animate-fade-in my-2"
+                    className="animate-fade-in"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
                     {hasJournalEntryToday ? (
-                      <CheckCircle2 className="h-10 w-10 text-journal" />
+                      <CheckCircle2 className="h-8 w-8 text-journal" />
                     ) : (
                       <span className="text-3xl text-journal-dark">0</span>
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Total Entries</span>
-                <span className="text-xl font-semibold">{journalEntries.length}</span>
-              </div>
-              <div className="flex items-center justify-center h-8">
-                {hasJournalEntryToday ? (
-                  <span className="text-green-600 font-medium flex items-center">
-                    <CheckCircle2 className="mr-1 h-4 w-4" />
-                    Entry added today
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground">No entry today</span>
-                )}
-              </div>
-              <div className="flex items-center justify-center group">
-                <span className="text-journal-dark group-hover:underline transition-all flex items-center">
-                  View Journal <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
               </div>
             </div>
           </CardContent>
@@ -152,27 +156,29 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-center">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Average Progress</span>
+                    <span className="text-xl font-semibold ml-2">{averageGoalProgress}%</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span>Active: {goals.length - completedGoals}</span>
+                    <span className="ml-2">Completed: {completedGoals}</span>
+                  </div>
+                  <div className="flex items-center group">
+                    <span className="text-goal-dark group-hover:underline transition-all flex items-center">
+                      Track Goals <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </div>
                 <CircularProgress 
                   value={averageGoalProgress} 
-                  size={100}
-                  strokeWidth={6}
+                  size={80}
+                  strokeWidth={8}
                   indicatorColor="stroke-goal" 
-                  className="animate-fade-in my-2"
+                  className="animate-fade-in"
                 />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Average Progress</span>
-                <span className="text-xl font-semibold">{averageGoalProgress}%</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span>Active: {goals.length - completedGoals}</span>
-                <span>Completed: {completedGoals}</span>
-              </div>
-              <div className="flex items-center justify-center group">
-                <span className="text-goal-dark group-hover:underline transition-all flex items-center">
-                  Track Goals <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
               </div>
             </div>
           </CardContent>

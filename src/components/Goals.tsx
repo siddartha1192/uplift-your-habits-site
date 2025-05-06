@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAppContext, Goal } from "@/contexts/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -378,27 +377,41 @@ const GoalCard: React.FC<GoalCardProps> = ({
           </div>
         </div>
         
-        {/* Goal progress with circular indicator */}
+        {/* Goal progress with circular indicator - updated layout */}
         <div className="px-4 pb-4">
-          <div className="flex items-center justify-center my-4">
+          <div className="flex items-center justify-between my-4">
+            <div>
+              <div className="flex items-center text-xs text-muted-foreground mb-2">
+                <Calendar className="mr-1 h-3 w-3" />
+                <span>Created: {createdAt}</span>
+              </div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Target className="mr-1 h-3 w-3" />
+                <span>Target: {formattedTargetDate}</span>
+              </div>
+              
+              {/* Days left (show only if not completed) */}
+              {!goal.completed && daysLeft > 0 && (
+                <div className="mt-2 text-sm px-2 py-1 bg-goal/10 rounded-md text-goal-dark">
+                  {daysLeft} {daysLeft === 1 ? 'day' : 'days'} remaining
+                </div>
+              )}
+              
+              {/* Completed message */}
+              {goal.completed && (
+                <div className="mt-2 text-sm px-2 py-1 bg-green-100 rounded-md text-green-800">
+                  Goal completed! 🎉
+                </div>
+              )}
+            </div>
+            
             <CircularProgress 
               value={goal.progress} 
               size={80}
-              strokeWidth={5}
+              strokeWidth={8}
               indicatorColor={goal.completed ? "stroke-green-500" : "stroke-goal"}
               className="animate-fade-in"
             />
-          </div>
-          
-          <div className="flex justify-between text-xs text-muted-foreground mb-4">
-            <div className="flex items-center">
-              <Calendar className="mr-1 h-3 w-3" />
-              <span>Created: {createdAt}</span>
-            </div>
-            <div className="flex items-center">
-              <Target className="mr-1 h-3 w-3" />
-              <span>Target: {formattedTargetDate}</span>
-            </div>
           </div>
           
           {/* Tasks */}
@@ -425,20 +438,6 @@ const GoalCard: React.FC<GoalCardProps> = ({
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-          
-          {/* Days left (show only if not completed) */}
-          {!goal.completed && daysLeft > 0 && (
-            <div className="mt-4 text-sm text-center px-2 py-1 bg-goal/10 rounded-md text-goal-dark">
-              {daysLeft} {daysLeft === 1 ? 'day' : 'days'} remaining
-            </div>
-          )}
-          
-          {/* Completed message */}
-          {goal.completed && (
-            <div className="mt-4 text-sm text-center px-2 py-1 bg-green-100 rounded-md text-green-800">
-              Goal completed! 🎉
             </div>
           )}
         </div>
