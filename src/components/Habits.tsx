@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -28,7 +29,7 @@ const Habits: React.FC = () => {
   const [newHabit, setNewHabit] = useState({
     title: "",
     description: "",
-    frequency: "daily" as const,
+    frequency: "daily" as "daily" | "weekly",
   });
 
   // Get today's date
@@ -61,6 +62,7 @@ const Habits: React.FC = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create a New Habit</DialogTitle>
+              <DialogDescription>Add a new habit to track your daily or weekly activities</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -180,7 +182,10 @@ const HabitCard: React.FC<HabitCardProps> = ({
   }
 
   return (
-    <Card className="habit-card overflow-hidden">
+    <Card 
+      className="habit-card overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:scale-[1.01]"
+      onClick={() => onToggle(habit.id, today)}
+    >
       <CardContent className="p-0">
         <div className="p-4 pb-3 flex justify-between items-start">
           <div>
@@ -188,7 +193,10 @@ const HabitCard: React.FC<HabitCardProps> = ({
             <p className="text-muted-foreground text-sm">{habit.description}</p>
           </div>
           <button 
-            onClick={() => onDelete(habit.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(habit.id);
+            }}
             className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
           >
             <X className="h-4 w-4" />
@@ -218,13 +226,20 @@ const HabitCard: React.FC<HabitCardProps> = ({
               const dayLabel = new Date(date).toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
               
               return (
-                <div key={date} className="flex flex-col items-center">
+                <div 
+                  key={date} 
+                  className="flex flex-col items-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggle(habit.id, date);
+                  }}
+                >
                   <div className="text-xs mb-1">{dayLabel}</div>
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${
                       isCompleted 
-                        ? "bg-habit border-habit text-white" 
-                        : "border-gray-300"
+                        ? "bg-habit border-habit text-white scale-110" 
+                        : "border-gray-300 hover:border-habit/50"
                     }`}
                   >
                     {isCompleted && <CheckCircle2 className="h-4 w-4" />}
@@ -237,24 +252,22 @@ const HabitCard: React.FC<HabitCardProps> = ({
         
         {/* Action button */}
         <div className="p-4 border-t">
-          <Button
-            onClick={() => onToggle(habit.id, today)}
-            variant={isCompletedToday ? "outline" : "default"}
-            className={`w-full ${
+          <div
+            className={`w-full h-12 rounded-md flex items-center justify-center transition-all ${
               isCompletedToday 
-                ? "border-habit text-habit-dark" 
-                : "bg-habit hover:bg-habit-dark"
+                ? "bg-green-50 text-habit border border-habit" 
+                : "bg-habit text-white hover:bg-habit-dark"
             }`}
           >
             {isCompletedToday ? (
               <>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
+                <CheckCircle2 className="mr-2 h-5 w-5" />
                 Completed Today
               </>
             ) : (
               "Mark as Completed"
             )}
-          </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

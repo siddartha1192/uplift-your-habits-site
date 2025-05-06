@@ -35,13 +35,21 @@ const Dashboard: React.FC = () => {
   // Calculate completed goals
   const completedGoals = goals.filter(goal => goal.completed).length;
 
+  // Handle card click to navigate to respective tabs
+  const handleCardClick = (tab: "habits" | "journal" | "goals") => {
+    setActiveTab(tab);
+  };
+
   return (
     <div className="p-4 md:p-6">
       <h2 className="text-2xl font-bold mb-6 animate-fade-in">Your Dashboard</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Habits Card */}
-        <Card className="hover-scale transform transition-all duration-300 hover:shadow-lg">
+        <Card 
+          className="hover-scale transform transition-all duration-300 hover:shadow-lg cursor-pointer"
+          onClick={() => handleCardClick("habits")}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-habit-dark">
               <CheckCircle2 className="mr-2 h-5 w-5" />
@@ -59,20 +67,20 @@ const Dashboard: React.FC = () => {
                 value={habitCompletionRate} 
                 className="h-2 bg-muted"
               />
-              <Button 
-                variant="outline" 
-                className="w-full border-habit text-habit-dark hover:bg-habit/10 transition-colors"
-                onClick={() => setActiveTab("habits")}
-              >
-                <span>Manage Habits</span>
-                <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Button>
+              <div className="flex items-center justify-center group">
+                <span className="text-habit-dark group-hover:underline transition-all flex items-center">
+                  Manage Habits <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
         
         {/* Journal Card */}
-        <Card className="hover-scale transform transition-all duration-300 hover:shadow-lg">
+        <Card 
+          className="hover-scale transform transition-all duration-300 hover:shadow-lg cursor-pointer"
+          onClick={() => handleCardClick("journal")}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-journal-dark">
               <CalendarCheck className="mr-2 h-5 w-5" />
@@ -96,20 +104,20 @@ const Dashboard: React.FC = () => {
                   <span className="text-muted-foreground">No entry today</span>
                 )}
               </div>
-              <Button 
-                variant="outline" 
-                className="w-full border-journal text-journal-dark hover:bg-journal/10 transition-colors"
-                onClick={() => setActiveTab("journal")}
-              >
-                <span>View Journal</span>
-                <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Button>
+              <div className="flex items-center justify-center group">
+                <span className="text-journal-dark group-hover:underline transition-all flex items-center">
+                  View Journal <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
         
         {/* Goals Card */}
-        <Card className="hover-scale transform transition-all duration-300 hover:shadow-lg">
+        <Card 
+          className="hover-scale transform transition-all duration-300 hover:shadow-lg cursor-pointer"
+          onClick={() => handleCardClick("goals")}  
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-goal-dark">
               <Target className="mr-2 h-5 w-5" />
@@ -131,14 +139,11 @@ const Dashboard: React.FC = () => {
                 <span>Active: {goals.length - completedGoals}</span>
                 <span>Completed: {completedGoals}</span>
               </div>
-              <Button 
-                variant="outline" 
-                className="w-full border-goal text-goal-dark hover:bg-goal/10 transition-colors"
-                onClick={() => setActiveTab("goals")}
-              >
-                <span>Track Goals</span>
-                <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Button>
+              <div className="flex items-center justify-center group">
+                <span className="text-goal-dark group-hover:underline transition-all flex items-center">
+                  Track Goals <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -161,14 +166,23 @@ const Dashboard: React.FC = () => {
               {habits.length > 0 ? (
                 <ul className="space-y-2">
                   {habits.slice(0, 3).map(habit => (
-                    <li key={habit.id} className="flex items-center p-2 rounded-md hover:bg-muted/50 transition-colors">
+                    <li 
+                      key={habit.id} 
+                      className="flex items-center p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab("habits");
+                      }}
+                    >
                       <div 
-                        className={`habit-checkbox habit ${
-                          habit.daysCompleted.includes(today) ? 'completed' : ''
+                        className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          habit.daysCompleted.includes(today) 
+                            ? 'bg-habit text-white' 
+                            : 'border-2 border-habit/30'
                         }`}
                       >
                         {habit.daysCompleted.includes(today) && (
-                          <CheckCircle2 className="h-4 w-4 text-white animate-pulse" />
+                          <CheckCircle2 className="h-4 w-4 text-white" />
                         )}
                       </div>
                       <div className="ml-3">
@@ -191,7 +205,14 @@ const Dashboard: React.FC = () => {
               {journalEntries.length > 0 ? (
                 <ul className="space-y-2">
                   {journalEntries.slice(0, 2).map(entry => (
-                    <li key={entry.id} className="p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors cursor-pointer" onClick={() => setActiveTab("journal")}>
+                    <li 
+                      key={entry.id} 
+                      className="p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors cursor-pointer" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab("journal");
+                      }}
+                    >
                       <p className="font-medium">{entry.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(entry.date).toLocaleDateString()}
@@ -210,7 +231,14 @@ const Dashboard: React.FC = () => {
               {goals.length > 0 ? (
                 <ul className="space-y-3">
                   {goals.slice(0, 2).map(goal => (
-                    <li key={goal.id} className="hover:bg-muted/50 p-2 rounded-md transition-colors cursor-pointer" onClick={() => setActiveTab("goals")}>
+                    <li 
+                      key={goal.id} 
+                      className="hover:bg-muted/50 p-2 rounded-md transition-colors cursor-pointer" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab("goals");
+                      }}
+                    >
                       <div className="flex justify-between mb-1">
                         <p className="font-medium">{goal.title}</p>
                         <span className="text-sm">{goal.progress}%</span>
@@ -218,6 +246,7 @@ const Dashboard: React.FC = () => {
                       <Progress 
                         value={goal.progress} 
                         className="h-2 bg-muted"
+                        indicatorClassName={goal.progress === 100 ? "bg-green-500" : undefined}
                       />
                     </li>
                   ))}
