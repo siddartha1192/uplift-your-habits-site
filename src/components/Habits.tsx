@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PlusCircle, CheckCircle2, Calendar, Flame, X } from "lucide-react";
+import { CircularProgress } from "@/components/ui/circular-progress";
 
 const Habits: React.FC = () => {
   const { habits, addHabit, toggleHabitCompletion, deleteHabit } = useAppContext();
@@ -181,6 +182,10 @@ const HabitCard: React.FC<HabitCardProps> = ({
     last7Days.push(date.toISOString().split('T')[0]);
   }
 
+  // Calculate completion rate for the last 7 days
+  const completedDaysCount = last7Days.filter(date => habit.daysCompleted.includes(date)).length;
+  const completionRate = Math.round((completedDaysCount / 7) * 100);
+
   return (
     <Card 
       className="habit-card overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:scale-[1.01]"
@@ -203,17 +208,25 @@ const HabitCard: React.FC<HabitCardProps> = ({
           </button>
         </div>
         
-        {/* Habit streaks and stats */}
+        {/* Habit stats with circular progress */}
         <div className="px-4 pb-2 flex items-center gap-4">
-          <div className="flex items-center text-sm">
-            <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
-            <span>{habit.frequency}</span>
-          </div>
-          <div className="flex items-center text-sm">
-            <Flame className="mr-1 h-4 w-4 text-orange-500" />
-            <span>
-              {habit.streak} {habit.streak === 1 ? "day" : "days"}
-            </span>
+          <CircularProgress 
+            value={completionRate} 
+            size={48} 
+            indicatorColor="stroke-habit" 
+            className="animate-fade-in"
+          />
+          <div className="flex flex-col">
+            <div className="flex items-center text-sm">
+              <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
+              <span>{habit.frequency}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Flame className="mr-1 h-4 w-4 text-orange-500" />
+              <span>
+                {habit.streak} {habit.streak === 1 ? "day" : "days"}
+              </span>
+            </div>
           </div>
         </div>
         

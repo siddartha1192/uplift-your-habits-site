@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CircularProgress } from "@/components/ui/circular-progress";
 import { 
   Dialog, 
   DialogContent, 
@@ -377,17 +378,17 @@ const GoalCard: React.FC<GoalCardProps> = ({
           </div>
         </div>
         
-        {/* Goal progress */}
+        {/* Goal progress with circular indicator */}
         <div className="px-4 pb-4">
-          <div className="flex justify-between items-center mb-1 text-sm">
-            <span>Progress</span>
-            <span className="font-medium">{goal.progress}%</span>
+          <div className="flex items-center justify-center my-4">
+            <CircularProgress 
+              value={goal.progress} 
+              size={80}
+              strokeWidth={5}
+              indicatorColor={goal.completed ? "stroke-green-500" : "stroke-goal"}
+              className="animate-fade-in"
+            />
           </div>
-          <Progress 
-            value={goal.progress} 
-            className="h-2 mb-4"
-            indicatorClassName="bg-goal"
-          />
           
           <div className="flex justify-between text-xs text-muted-foreground mb-4">
             <div className="flex items-center">

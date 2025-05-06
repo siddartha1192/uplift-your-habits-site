@@ -189,4 +189,15 @@
       transform: translateX(0);
     }
   }
+  
+  /* Circular progress animation */
+  @keyframes circle-progress {
+    0% {
+      stroke-dasharray: 0 100;
+    }
+  }
+  
+  .circle-progress-animation {
+    animation: circle-progress 1s ease-out forwards;
+  }
 }

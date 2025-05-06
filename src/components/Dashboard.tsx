@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { BarChart, CheckCircle2, CalendarCheck, Target, ArrowRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { CircularProgress } from "@/components/ui/circular-progress";
 
 const Dashboard: React.FC = () => {
   const { habits, journalEntries, goals, setActiveTab } = useAppContext();
@@ -59,14 +60,19 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex items-center justify-center">
+                <CircularProgress 
+                  value={habitCompletionRate} 
+                  size={100}
+                  strokeWidth={6}
+                  indicatorColor="stroke-habit" 
+                  className="animate-fade-in my-2"
+                />
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Completion Today</span>
                 <span className="text-xl font-semibold">{habitsCompletedToday}/{habits.length}</span>
               </div>
-              <Progress 
-                value={habitCompletionRate} 
-                className="h-2 bg-muted"
-              />
               <div className="flex items-center justify-center group">
                 <span className="text-habit-dark group-hover:underline transition-all flex items-center">
                   Manage Habits <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -90,6 +96,25 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex justify-center">
+                <div className="relative">
+                  <CircularProgress 
+                    value={hasJournalEntryToday ? 100 : 0} 
+                    size={100}
+                    strokeWidth={6}
+                    showPercentage={false}
+                    indicatorColor="stroke-journal" 
+                    className="animate-fade-in my-2"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {hasJournalEntryToday ? (
+                      <CheckCircle2 className="h-10 w-10 text-journal" />
+                    ) : (
+                      <span className="text-3xl text-journal-dark">0</span>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Total Entries</span>
                 <span className="text-xl font-semibold">{journalEntries.length}</span>
@@ -127,14 +152,19 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex justify-center">
+                <CircularProgress 
+                  value={averageGoalProgress} 
+                  size={100}
+                  strokeWidth={6}
+                  indicatorColor="stroke-goal" 
+                  className="animate-fade-in my-2"
+                />
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Average Progress</span>
                 <span className="text-xl font-semibold">{averageGoalProgress}%</span>
               </div>
-              <Progress 
-                value={averageGoalProgress} 
-                className="h-2 bg-muted"
-              />
               <div className="flex justify-between items-center text-sm">
                 <span>Active: {goals.length - completedGoals}</span>
                 <span>Completed: {completedGoals}</span>
