@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { JournalEntry } from "@/contexts/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Pencil, X } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 
 interface JournalEntryCardProps {
   entry: JournalEntry;
@@ -72,13 +73,34 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
             >
               <Pencil className="h-4 w-4" />
             </button>
-            <button 
-              onClick={() => onDelete(entry.id)}
-              className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
-              aria-label="Delete entry"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button 
+                  className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-full hover:bg-muted"
+                  aria-label="Delete entry"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this journal entry? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => onDelete(entry.id)}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
         
