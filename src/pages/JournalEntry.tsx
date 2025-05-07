@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { isEntryValidForAutoSave } from "@/utils/journalUtils";
 
 const JournalEntryPage: React.FC = () => {
   const { journalEntries, addJournalEntry, deleteJournalEntry } = useAppContext();
@@ -30,6 +31,7 @@ const JournalEntryPage: React.FC = () => {
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [activeTab, setActiveTab] = useState("write");
   
   const [entry, setEntry] = useState({
     title: "",
@@ -56,7 +58,7 @@ const JournalEntryPage: React.FC = () => {
   // Auto-save functionality
   useEffect(() => {
     // Only enable auto-save if there are unsaved changes and entry has content
-    if (hasUnsavedChanges && (entry.title.trim() || entry.content.trim())) {
+    if (hasUnsavedChanges && isEntryValidForAutoSave(entry)) {
       // Clear any existing timer
       if (autoSaveTimer) {
         clearTimeout(autoSaveTimer);
@@ -80,13 +82,23 @@ const JournalEntryPage: React.FC = () => {
 
   // Apply a template to the current entry
   const applyTemplate = (templateContent: { title: string; prompts: string[] }) => {
+    console.log("Applying template:", templateContent.title);
     const formattedPrompts = templateContent.prompts.join('\n\n');
     setEntry({
       title: templateContent.title,
       content: formattedPrompts,
-    } as typeof entry);
+      mood: entry.mood,
+    });
     setActiveTemplate(templateContent.title);
     setHasUnsavedChanges(true);
+    
+    // Switch to write tab after template is applied
+    setActiveTab("write");
+    
+    toast({
+      title: "Template applied",
+      description: `${templateContent.title} template has been applied.`,
+    });
   };
 
   // Handle content change and mark as having unsaved changes
@@ -109,7 +121,7 @@ const JournalEntryPage: React.FC = () => {
 
   // Create or update a journal entry
   const handleSaveEntry = (isAutoSave = false) => {
-    if (entry.title.trim() && entry.content.trim()) {
+    if (isEntryValidForAutoSave(entry)) {
       if (entryId && entryId !== "new") {
         // Handle edit - delete old and add updated entry with same ID
         const entryToEdit = journalEntries.find(e => e.id === entryId);
@@ -170,7 +182,7 @@ const JournalEntryPage: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <Tabs defaultValue="write" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 mb-6">
             <TabsTrigger value="write">Write</TabsTrigger>
             <TabsTrigger value="templates">Use Template</TabsTrigger>

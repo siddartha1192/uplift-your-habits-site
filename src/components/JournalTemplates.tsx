@@ -105,10 +105,13 @@ export const JournalTemplates: React.FC<JournalTemplatesProps> = ({
             className={`cursor-pointer transition-all hover:shadow-md ${
               activeTemplate === template.title ? 'ring-2 ring-journal' : ''
             }`}
-            onClick={() => onSelectTemplate({
-              title: template.title,
-              prompts: template.prompts
-            })}
+            onClick={() => {
+              console.log("Template selected:", template.title);
+              onSelectTemplate({
+                title: template.title,
+                prompts: template.prompts
+              });
+            }}
           >
             <CardContent className="p-4">
               <h4 className="font-medium text-md mb-1">{template.title}</h4>
