@@ -19,7 +19,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { ArrowLeft, MessageSquareText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const JournalEntryPage: React.FC = () => {
@@ -28,6 +28,8 @@ const JournalEntryPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
+  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const [entry, setEntry] = useState({
     title: "",
@@ -45,23 +47,68 @@ const JournalEntryPage: React.FC = () => {
           content: existingEntry.content,
           mood: existingEntry.mood,
         });
+        // If this entry was created from a template, mark it as active
+        setActiveTemplate(existingEntry.title);
       }
     }
   }, [entryId, journalEntries]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    // Only enable auto-save if there are unsaved changes and entry has content
+    if (hasUnsavedChanges && (entry.title.trim() || entry.content.trim())) {
+      // Clear any existing timer
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+      }
+      
+      // Set new timer to save after 3 seconds of inactivity
+      const timer = setTimeout(() => {
+        handleSaveEntry(true);
+        setHasUnsavedChanges(false);
+      }, 3000);
+      
+      setAutoSaveTimer(timer);
+    }
+    
+    return () => {
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+      }
+    };
+  }, [entry, hasUnsavedChanges]);
 
   // Apply a template to the current entry
   const applyTemplate = (templateContent: { title: string; prompts: string[] }) => {
     const formattedPrompts = templateContent.prompts.join('\n\n');
     setEntry({
-      ...entry,
       title: templateContent.title,
       content: formattedPrompts,
-    });
+    } as typeof entry);
     setActiveTemplate(templateContent.title);
+    setHasUnsavedChanges(true);
+  };
+
+  // Handle content change and mark as having unsaved changes
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEntry({ ...entry, content: e.target.value });
+    setHasUnsavedChanges(true);
+  };
+
+  // Handle title change and mark as having unsaved changes
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEntry({ ...entry, title: e.target.value });
+    setHasUnsavedChanges(true);
+  };
+
+  // Handle mood change and mark as having unsaved changes
+  const handleMoodChange = (value: "great" | "good" | "neutral" | "bad" | "terrible") => {
+    setEntry({ ...entry, mood: value });
+    setHasUnsavedChanges(true);
   };
 
   // Create or update a journal entry
-  const handleSaveEntry = () => {
+  const handleSaveEntry = (isAutoSave = false) => {
     if (entry.title.trim() && entry.content.trim()) {
       if (entryId && entryId !== "new") {
         // Handle edit - delete old and add updated entry with same ID
@@ -74,23 +121,30 @@ const JournalEntryPage: React.FC = () => {
             date: entryToEdit.date,
           } as any);
           
-          toast({
-            title: "Journal entry updated",
-            description: "Your journal entry has been saved successfully.",
-          });
+          if (!isAutoSave) {
+            toast({
+              title: "Journal entry updated",
+              description: "Your journal entry has been saved successfully.",
+            });
+          }
         }
       } else {
         // Create new entry
         addJournalEntry(entry);
-        toast({
-          title: "Journal entry created",
-          description: "Your journal entry has been saved successfully.",
-        });
+        
+        if (!isAutoSave) {
+          toast({
+            title: "Journal entry created",
+            description: "Your journal entry has been saved successfully.",
+          });
+        }
       }
       
-      // Navigate back to journal main page
-      navigate("/journal");
-    } else {
+      // Only navigate back if not auto-saving
+      if (!isAutoSave) {
+        navigate("/journal");
+      }
+    } else if (!isAutoSave) {
       toast({
         title: "Cannot save entry",
         description: "Please add a title and content to your journal entry.",
@@ -131,9 +185,7 @@ const JournalEntryPage: React.FC = () => {
                 id="title"
                 placeholder="Entry title"
                 value={entry.title}
-                onChange={(e) =>
-                  setEntry({ ...entry, title: e.target.value })
-                }
+                onChange={handleTitleChange}
               />
             </div>
             <div className="space-y-2">
@@ -145,9 +197,7 @@ const JournalEntryPage: React.FC = () => {
                 placeholder="Write your thoughts..."
                 rows={12}
                 value={entry.content}
-                onChange={(e) =>
-                  setEntry({ ...entry, content: e.target.value })
-                }
+                onChange={handleContentChange}
                 className="min-h-[300px]"
               />
             </div>
@@ -157,9 +207,7 @@ const JournalEntryPage: React.FC = () => {
               </label>
               <Select
                 value={entry.mood}
-                onValueChange={(value: "great" | "good" | "neutral" | "bad" | "terrible") =>
-                  setEntry({ ...entry, mood: value })
-                }
+                onValueChange={handleMoodChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select your mood" />
@@ -187,7 +235,7 @@ const JournalEntryPage: React.FC = () => {
           <Button variant="outline" onClick={() => navigate("/journal")} className="mr-2">
             Cancel
           </Button>
-          <Button onClick={handleSaveEntry} className="bg-journal hover:bg-journal-dark">
+          <Button onClick={() => handleSaveEntry(false)} className="bg-journal hover:bg-journal-dark">
             {entryId && entryId !== "new" ? "Save Changes" : "Save Entry"}
           </Button>
         </div>
