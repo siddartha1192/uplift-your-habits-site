@@ -19,9 +19,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, ListTodo } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { isEntryValidForAutoSave } from "@/utils/journalUtils";
+import TodoListCard from "@/components/journal/TodoListCard";
 
 const JournalEntryPage: React.FC = () => {
   const { journalEntries, addJournalEntry, deleteJournalEntry } = useAppContext();
@@ -32,6 +33,7 @@ const JournalEntryPage: React.FC = () => {
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("write");
+  const [showTodoList, setShowTodoList] = useState(false);
   
   const [entry, setEntry] = useState({
     title: "",
@@ -119,6 +121,11 @@ const JournalEntryPage: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
+  // Toggle todo list
+  const handleToggleTodoList = () => {
+    setShowTodoList(!showTodoList);
+  };
+
   // Create or update a journal entry
   const handleSaveEntry = (isAutoSave = false) => {
     if (isEntryValidForAutoSave(entry)) {
@@ -131,7 +138,7 @@ const JournalEntryPage: React.FC = () => {
             ...entry,
             id: entryId,
             date: entryToEdit.date,
-          } as any);
+          } as JournalEntry);
           
           if (!isAutoSave) {
             toast({
@@ -179,78 +186,95 @@ const JournalEntryPage: React.FC = () => {
         <h2 className="text-2xl font-bold text-journal">
           {entryId && entryId !== "new" ? "Edit Journal Entry" : "Create Journal Entry"}
         </h2>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-6">
-            <TabsTrigger value="write">Write</TabsTrigger>
-            <TabsTrigger value="templates">Use Template</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="write" className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium">
-                Title
-              </label>
-              <Input
-                id="title"
-                placeholder="Entry title"
-                value={entry.title}
-                onChange={handleTitleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="content" className="text-sm font-medium">
-                Content
-              </label>
-              <Textarea
-                id="content"
-                placeholder="Write your thoughts..."
-                rows={12}
-                value={entry.content}
-                onChange={handleContentChange}
-                className="min-h-[300px]"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="mood" className="text-sm font-medium">
-                How are you feeling today?
-              </label>
-              <Select
-                value={entry.mood}
-                onValueChange={handleMoodChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your mood" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="great">Great 😄</SelectItem>
-                  <SelectItem value="good">Good 🙂</SelectItem>
-                  <SelectItem value="neutral">Neutral 😐</SelectItem>
-                  <SelectItem value="bad">Bad 😕</SelectItem>
-                  <SelectItem value="terrible">Terrible 😢</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="templates">
-            <JournalTemplates 
-              onSelectTemplate={applyTemplate}
-              activeTemplate={activeTemplate}
-            />
-          </TabsContent>
-        </Tabs>
-
-        <div className="flex justify-end mt-6">
-          <Button variant="outline" onClick={() => navigate("/journal")} className="mr-2">
-            Cancel
+        
+        <div className="ml-auto flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleToggleTodoList}
+            className="flex items-center gap-1"
+          >
+            <ListTodo className="h-4 w-4" />
+            {showTodoList ? "Hide Todo List" : "Show Todo List"}
           </Button>
-          <Button onClick={() => handleSaveEntry(false)} className="bg-journal hover:bg-journal-dark">
+          <Button 
+            onClick={() => handleSaveEntry(false)} 
+            className="bg-journal hover:bg-journal-dark flex items-center gap-1"
+          >
+            <Save className="h-4 w-4" />
             {entryId && entryId !== "new" ? "Save Changes" : "Save Entry"}
           </Button>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`${showTodoList ? 'md:col-span-2' : 'md:col-span-3'} bg-white rounded-lg shadow p-6`}>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-2 mb-6">
+              <TabsTrigger value="write">Write</TabsTrigger>
+              <TabsTrigger value="templates">Use Template</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="write" className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-sm font-medium">
+                  Title
+                </label>
+                <Input
+                  id="title"
+                  placeholder="Entry title"
+                  value={entry.title}
+                  onChange={handleTitleChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="content" className="text-sm font-medium">
+                  Content
+                </label>
+                <Textarea
+                  id="content"
+                  placeholder="Write your thoughts..."
+                  rows={12}
+                  value={entry.content}
+                  onChange={handleContentChange}
+                  className="min-h-[300px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="mood" className="text-sm font-medium">
+                  How are you feeling today?
+                </label>
+                <Select
+                  value={entry.mood}
+                  onValueChange={handleMoodChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your mood" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="great">Great 😄</SelectItem>
+                    <SelectItem value="good">Good 🙂</SelectItem>
+                    <SelectItem value="neutral">Neutral 😐</SelectItem>
+                    <SelectItem value="bad">Bad 😕</SelectItem>
+                    <SelectItem value="terrible">Terrible 😢</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="templates">
+              <JournalTemplates 
+                onSelectTemplate={applyTemplate}
+                activeTemplate={activeTemplate}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {showTodoList && (
+          <div className="md:col-span-1">
+            <TodoListCard />
+          </div>
+        )}
       </div>
     </div>
   );
