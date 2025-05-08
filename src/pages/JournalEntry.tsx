@@ -140,12 +140,13 @@ const JournalEntryPage: React.FC = () => {
         
         const newEntry: JournalEntry = {
           id: `j${Date.now()}`,
-          title: entry.title,
+          title: entry.title || "Untitled Entry",
           content: entry.content,
           mood: entry.mood,
           date: new Date().toISOString()
         };
         
+        console.log("New entry details before saving:", newEntry);
         addJournalEntry(newEntry);
         console.log("Created new entry:", newEntry);
         
@@ -155,8 +156,11 @@ const JournalEntryPage: React.FC = () => {
         });
       }
       
-      // Navigate back to journal list after saving
-      navigate("/journal");
+      // Force a small delay before navigation to ensure context is updated
+      setTimeout(() => {
+        navigate("/journal");
+      }, 100);
+      
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast({

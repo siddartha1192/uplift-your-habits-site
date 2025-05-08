@@ -13,6 +13,8 @@ const Journal: React.FC = () => {
 
   // Group entries by month for display
   const groupedEntries = groupEntriesByMonth(journalEntries);
+  
+  console.log("Current journal entries:", journalEntries);
 
   // Handle edit action
   const handleEditEntry = (entry) => {
