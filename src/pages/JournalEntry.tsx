@@ -128,17 +128,34 @@ const JournalEntryPage: React.FC = () => {
 
   // Create or update a journal entry
   const handleSaveEntry = (isAutoSave = false) => {
-    if (isEntryValidForAutoSave(entry)) {
+    // Add console logs to debug saving issues
+    console.log("Saving entry:", entry);
+    console.log("Is valid for save:", isEntryValidForAutoSave(entry));
+
+    if (entry.title.trim() === "" && entry.content.trim() === "") {
+      if (!isAutoSave) {
+        toast({
+          title: "Cannot save entry",
+          description: "Please add a title or content to your journal entry.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    try {
       if (entryId && entryId !== "new") {
         // Handle edit - delete old and add updated entry with same ID
         const entryToEdit = journalEntries.find(e => e.id === entryId);
         if (entryToEdit) {
           deleteJournalEntry(entryId);
-          addJournalEntry({
+          const updatedEntry: JournalEntry = {
             ...entry,
             id: entryId,
             date: entryToEdit.date,
-          } as JournalEntry);
+          };
+          addJournalEntry(updatedEntry);
+          console.log("Updated entry:", updatedEntry);
           
           if (!isAutoSave) {
             toast({
@@ -148,8 +165,14 @@ const JournalEntryPage: React.FC = () => {
           }
         }
       } else {
-        // Create new entry
-        addJournalEntry(entry);
+        // Create new entry with ID and date
+        const newEntry: JournalEntry = {
+          ...entry,
+          id: `j${Date.now()}`,
+          date: new Date().toISOString(),
+        };
+        addJournalEntry(newEntry);
+        console.log("New entry created:", newEntry);
         
         if (!isAutoSave) {
           toast({
@@ -159,14 +182,15 @@ const JournalEntryPage: React.FC = () => {
         }
       }
       
-      // Only navigate back if not auto-saving
+      // Only navigate back if not auto-saving and it was successful
       if (!isAutoSave) {
         navigate("/journal");
       }
-    } else if (!isAutoSave) {
+    } catch (error) {
+      console.error("Error saving journal entry:", error);
       toast({
-        title: "Cannot save entry",
-        description: "Please add a title and content to your journal entry.",
+        title: "Save failed",
+        description: "There was an error saving your journal entry. Please try again.",
         variant: "destructive",
       });
     }
