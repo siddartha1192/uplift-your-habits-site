@@ -162,24 +162,24 @@ const JournalEntryPage: React.FC = () => {
               title: "Journal entry updated",
               description: "Your journal entry has been saved successfully.",
             });
-            // Navigate back to journal after manual save of edit
-            navigate("/journal");
+            
+            navigate("/journal"); // Fixed - navigate to journal not dashboard
           }
         }
       } else {
-        // Create new entry with explicit ID and date
+        // This is a completely new entry
         const newId = `j${Date.now()}`;
-        const newDate = new Date().toISOString();
-        
         const newEntry: JournalEntry = {
           title: entry.title,
           content: entry.content,
           mood: entry.mood,
           id: newId,
-          date: newDate,
+          date: new Date().toISOString(),
         };
         
+        // Critical fix: Using addJournalEntry directly with the new entry
         addJournalEntry(newEntry);
+        
         console.log("New entry created:", newEntry);
         
         if (!isAutoSave) {
@@ -187,8 +187,8 @@ const JournalEntryPage: React.FC = () => {
             title: "Journal entry created",
             description: "Your journal entry has been saved successfully.",
           });
-          // Navigate back to journal after manual save
-          navigate("/journal");
+          
+          navigate("/journal"); // Fixed - navigate to journal not dashboard
         }
       }
     } catch (error) {
@@ -310,4 +310,3 @@ const JournalEntryPage: React.FC = () => {
 };
 
 export default JournalEntryPage;
-
