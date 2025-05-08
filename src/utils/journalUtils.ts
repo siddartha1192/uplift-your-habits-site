@@ -25,7 +25,12 @@ export const groupEntriesByMonth = (entries: JournalEntry[]): Record<string, Jou
 
 /**
  * Checks if entry has enough content to be auto-saved
+ * Returns true if either title or content has text
  */
 export const isEntryValidForAutoSave = (entry: Partial<JournalEntry>): boolean => {
-  return Boolean(entry.title?.trim() || entry.content?.trim());
+  if (!entry) return false;
+  return Boolean(
+    (entry.title && entry.title.trim().length > 0) || 
+    (entry.content && entry.content.trim().length > 0)
+  );
 };
