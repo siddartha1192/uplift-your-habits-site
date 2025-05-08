@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/tabs";
 import { ArrowLeft, Save, ListTodo } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { isEntryValidForAutoSave } from "@/utils/journalUtils";
 import TodoListCard from "@/components/journal/TodoListCard";
 
 const JournalEntryPage: React.FC = () => {
@@ -30,8 +29,6 @@ const JournalEntryPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
-  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("write");
   const [showTodoList, setShowTodoList] = useState(false);
   
@@ -41,7 +38,7 @@ const JournalEntryPage: React.FC = () => {
     mood: undefined as undefined | "great" | "good" | "neutral" | "bad" | "terrible",
   });
 
-  // If we have an entryId and it's not "new", load the existing entry
+  // Load existing entry if editing
   useEffect(() => {
     if (entryId && entryId !== "new") {
       const existingEntry = journalEntries.find(entry => entry.id === entryId);
@@ -51,36 +48,18 @@ const JournalEntryPage: React.FC = () => {
           content: existingEntry.content,
           mood: existingEntry.mood,
         });
-        // If this entry was created from a template, mark it as active
         setActiveTemplate(existingEntry.title);
+      } else {
+        // If entry not found, redirect back to journal
+        navigate("/journal");
+        toast({
+          title: "Entry not found",
+          description: "The journal entry you're looking for doesn't exist.",
+          variant: "destructive",
+        });
       }
     }
-  }, [entryId, journalEntries]);
-
-  // Auto-save functionality
-  useEffect(() => {
-    // Only enable auto-save if there are unsaved changes and entry has content
-    if (hasUnsavedChanges && isEntryValidForAutoSave(entry)) {
-      // Clear any existing timer
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer);
-      }
-      
-      // Set new timer to save after 3 seconds of inactivity
-      const timer = setTimeout(() => {
-        handleSaveEntry(true);
-        setHasUnsavedChanges(false);
-      }, 3000);
-      
-      setAutoSaveTimer(timer);
-    }
-    
-    return () => {
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer);
-      }
-    };
-  }, [entry, hasUnsavedChanges]);
+  }, [entryId, journalEntries, navigate, toast]);
 
   // Apply a template to the current entry
   const applyTemplate = (templateContent: { title: string; prompts: string[] }) => {
@@ -92,7 +71,6 @@ const JournalEntryPage: React.FC = () => {
       mood: entry.mood,
     });
     setActiveTemplate(templateContent.title);
-    setHasUnsavedChanges(true);
     
     // Switch to write tab after template is applied
     setActiveTab("write");
@@ -103,22 +81,19 @@ const JournalEntryPage: React.FC = () => {
     });
   };
 
-  // Handle content change and mark as having unsaved changes
+  // Handle content change 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setEntry({ ...entry, content: e.target.value });
-    setHasUnsavedChanges(true);
   };
 
-  // Handle title change and mark as having unsaved changes
+  // Handle title change
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEntry({ ...entry, title: e.target.value });
-    setHasUnsavedChanges(true);
   };
 
-  // Handle mood change and mark as having unsaved changes
+  // Handle mood change
   const handleMoodChange = (value: "great" | "good" | "neutral" | "bad" | "terrible") => {
     setEntry({ ...entry, mood: value });
-    setHasUnsavedChanges(true);
   };
 
   // Toggle todo list
@@ -127,70 +102,61 @@ const JournalEntryPage: React.FC = () => {
   };
 
   // Create or update a journal entry
-  const handleSaveEntry = (isAutoSave = false) => {
-    // Add console logs to debug saving issues
-    console.log("Saving entry:", entry);
-    console.log("Is valid for save:", isEntryValidForAutoSave(entry));
-
+  const handleSaveEntry = () => {
+    // Validate entry
     if (entry.title.trim() === "" && entry.content.trim() === "") {
-      if (!isAutoSave) {
-        toast({
-          title: "Cannot save entry",
-          description: "Please add a title or content to your journal entry.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Cannot save entry",
+        description: "Please add a title or content to your journal entry.",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       if (entryId && entryId !== "new") {
-        // Handle edit - delete old and add updated entry with same ID
-        const entryToEdit = journalEntries.find(e => e.id === entryId);
-        if (entryToEdit) {
-          deleteJournalEntry(entryId);
-          const updatedEntry: JournalEntry = {
-            ...entry,
-            id: entryId,
-            date: entryToEdit.date,
-          };
-          addJournalEntry(updatedEntry);
-          console.log("Updated entry:", updatedEntry);
-          
-          if (!isAutoSave) {
-            toast({
-              title: "Journal entry updated",
-              description: "Your journal entry has been saved successfully.",
-            });
-            
-            navigate("/journal"); // Fixed - navigate to journal not dashboard
-          }
-        }
-      } else {
-        // This is a completely new entry
-        const newId = `j${Date.now()}`;
-        const newEntry: JournalEntry = {
+        // Updating an existing entry
+        console.log("Updating existing entry with ID:", entryId);
+        
+        const updatedEntry: JournalEntry = {
+          id: entryId,
           title: entry.title,
           content: entry.content,
           mood: entry.mood,
-          id: newId,
-          date: new Date().toISOString(),
+          date: journalEntries.find(e => e.id === entryId)?.date || new Date().toISOString()
         };
         
-        // Critical fix: Using addJournalEntry directly with the new entry
+        // Delete old entry and add updated one
+        deleteJournalEntry(entryId);
+        addJournalEntry(updatedEntry);
+        
+        toast({
+          title: "Journal entry updated",
+          description: "Your journal entry has been saved successfully.",
+        });
+      } else {
+        // Creating a new entry
+        console.log("Creating new journal entry");
+        
+        const newEntry: JournalEntry = {
+          id: `j${Date.now()}`,
+          title: entry.title,
+          content: entry.content,
+          mood: entry.mood,
+          date: new Date().toISOString()
+        };
+        
         addJournalEntry(newEntry);
+        console.log("Created new entry:", newEntry);
         
-        console.log("New entry created:", newEntry);
-        
-        if (!isAutoSave) {
-          toast({
-            title: "Journal entry created",
-            description: "Your journal entry has been saved successfully.",
-          });
-          
-          navigate("/journal"); // Fixed - navigate to journal not dashboard
-        }
+        toast({
+          title: "Journal entry created",
+          description: "Your journal entry has been saved successfully.",
+        });
       }
+      
+      // Navigate back to journal list after saving
+      navigate("/journal");
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast({
@@ -226,7 +192,7 @@ const JournalEntryPage: React.FC = () => {
             {showTodoList ? "Hide Todo List" : "Show Todo List"}
           </Button>
           <Button 
-            onClick={() => handleSaveEntry(false)} 
+            onClick={handleSaveEntry} 
             className="bg-journal hover:bg-journal-dark flex items-center gap-1"
           >
             <Save className="h-4 w-4" />
