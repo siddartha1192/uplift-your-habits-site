@@ -46,6 +46,14 @@ const Journal: React.FC = () => {
     }
   };
 
+  // Sort entries by date (newest first)
+  const sortedEntries = [...journalEntries].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  console.log("Journal entries:", journalEntries); // Debug log
+  console.log("Sorted entries:", sortedEntries); // Debug log
+
   return (
     <div className="p-4 md:p-6 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -56,7 +64,7 @@ const Journal: React.FC = () => {
         </Button>
       </div>
 
-      {journalEntries.length === 0 ? (
+      {sortedEntries.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
             <div className="flex flex-col items-center gap-4">
@@ -74,49 +82,52 @@ const Journal: React.FC = () => {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {journalEntries
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .map((entry) => (
-              <Card key={entry.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{entry.title}</CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(entry.date)}
-                        {entry.mood && (
-                          <span className="flex items-center gap-1">
-                            • {getMoodEmoji(entry.mood)} {entry.mood}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditEntry(entry.id)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+          <p className="text-sm text-muted-foreground mb-2">
+            Showing {sortedEntries.length} {sortedEntries.length === 1 ? 'entry' : 'entries'}
+          </p>
+          {sortedEntries.map((entry) => (
+            <Card key={entry.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">{entry.title}</CardTitle>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(entry.date)}
+                      {entry.mood && (
+                        <span className="flex items-center gap-1">
+                          • {getMoodEmoji(entry.mood)} {entry.mood}
+                        </span>
+                      )}
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-foreground line-clamp-3">
-                    {entry.content}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditEntry(entry.id)}
+                      title="Edit entry"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteEntry(entry.id)}
+                      title="Delete entry"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground line-clamp-3">
+                  {entry.content}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

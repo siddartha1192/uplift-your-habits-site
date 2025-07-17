@@ -1,6 +1,4 @@
-
 import React from "react";
-import { AppProvider } from "@/contexts/AppContext";
 import Navigation from "@/components/Navigation";
 import Dashboard from "@/components/Dashboard";
 import Habits from "@/components/Habits";
@@ -22,15 +20,13 @@ const MainContent: React.FC = () => {
   );
 };
 
-// This is the Index page that will wrap everything in the AppProvider
+// This is the Index page - AppProvider is now in App.tsx
 const Index: React.FC = () => {
   return (
-    <AppProvider>
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <MainContent />
-      </div>
-    </AppProvider>
+    <div className="min-h-screen flex flex-col">
+      <Navigation />
+      <MainContent />
+    </div>
   );
 };
 

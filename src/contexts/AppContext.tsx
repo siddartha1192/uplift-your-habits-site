@@ -249,23 +249,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setHabits(habits.filter((habit) => habit.id !== habitId));
   };
 
-  // Journal functions
-  const addJournalEntry = (entry: Omit<JournalEntry, "id" | "date"> | JournalEntry) => {
-    if ('id' in entry && entry.id) {
-      // Update existing entry
-      setJournalEntries(entries => 
-        entries.map(e => e.id === entry.id ? entry as JournalEntry : e)
-      );
-    } else {
-      // Create new entry
-      const newEntry: JournalEntry = {
-        ...(entry as Omit<JournalEntry, "id" | "date">),
-        id: `j${Date.now()}`,
-        date: new Date().toISOString(),
-      };
-      setJournalEntries(entries => [...entries, newEntry]);
-    }
-  };
+// Fixed Journal functions in AppContext.tsx with debug logging
+const addJournalEntry = (entry: Omit<JournalEntry, "id" | "date"> | JournalEntry) => {
+  console.log("Adding journal entry:", entry); // Debug log
+  
+  if ('id' in entry && entry.id) {
+    // Update existing entry - keep the original date
+    console.log("Updating existing entry with ID:", entry.id); // Debug log
+    setJournalEntries(entries => {
+      const updatedEntries = entries.map(e => e.id === entry.id ? entry as JournalEntry : e);
+      console.log("Updated entries:", updatedEntries); // Debug log
+      return updatedEntries;
+    });
+  } else {
+    // Create new entry
+    const newEntry: JournalEntry = {
+      id: `j${Date.now()}`,
+      title: entry.title || "Untitled Entry",
+      content: entry.content,
+      date: new Date().toISOString(),
+      mood: entry.mood,
+    };
+    console.log("Creating new entry:", newEntry); // Debug log
+    
+    setJournalEntries(entries => {
+      const newEntries = [...entries, newEntry];
+      console.log("New entries array:", newEntries); // Debug log
+      return newEntries;
+    });
+  }
+};
 
   const deleteJournalEntry = (entryId: string) => {
     setJournalEntries(entries => entries.filter(entry => entry.id !== entryId));
