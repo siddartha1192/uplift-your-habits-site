@@ -115,19 +115,17 @@ const JournalEntryPage: React.FC = () => {
 
     try {
       if (entryId && entryId !== "new") {
-        // Updating an existing entry
+        // Updating an existing entry - pass complete entry object
         console.log("Updating existing entry with ID:", entryId);
         
         const updatedEntry: JournalEntry = {
           id: entryId,
-          title: entry.title,
+          title: entry.title || "Untitled Entry",
           content: entry.content,
           mood: entry.mood,
           date: journalEntries.find(e => e.id === entryId)?.date || new Date().toISOString()
         };
         
-        // Delete old entry and add updated one
-        deleteJournalEntry(entryId);
         addJournalEntry(updatedEntry);
         
         toast({
@@ -135,20 +133,17 @@ const JournalEntryPage: React.FC = () => {
           description: "Your journal entry has been saved successfully.",
         });
       } else {
-        // Creating a new entry
+        // Creating a new entry - let AppContext generate ID and date
         console.log("Creating new journal entry");
         
-        const newEntry: JournalEntry = {
-          id: `j${Date.now()}`,
+        const newEntryData = {
           title: entry.title || "Untitled Entry",
           content: entry.content,
           mood: entry.mood,
-          date: new Date().toISOString()
         };
         
-        console.log("New entry details before saving:", newEntry);
-        addJournalEntry(newEntry);
-        console.log("Created new entry:", newEntry);
+        console.log("New entry data before saving:", newEntryData);
+        addJournalEntry(newEntryData);
         
         toast({
           title: "Journal entry created",
@@ -156,10 +151,8 @@ const JournalEntryPage: React.FC = () => {
         });
       }
       
-      // Force a small delay before navigation to ensure context is updated
-      setTimeout(() => {
-        navigate("/journal");
-      }, 100);
+      // Navigate back to journal
+      navigate("/journal");
       
     } catch (error) {
       console.error("Error saving journal entry:", error);
