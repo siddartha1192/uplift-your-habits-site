@@ -264,12 +264,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         id: `j${Date.now()}`,
         date: new Date().toISOString(),
       };
-      setJournalEntries([...journalEntries, newEntry]);
+      setJournalEntries(entries => [...entries, newEntry]);
     }
   };
 
   const deleteJournalEntry = (entryId: string) => {
-    setJournalEntries(journalEntries.filter((entry) => entry.id !== entryId));
+    setJournalEntries(entries => entries.filter((entry) => entry.id !== entryId));
   };
 
   // Goal functions
