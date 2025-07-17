@@ -251,14 +251,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Journal functions
   const addJournalEntry = (entry: Omit<JournalEntry, "id" | "date"> | JournalEntry) => {
-    // Check if this is an edit (has an id) or a new entry
     if ('id' in entry && entry.id) {
-      // This is an edit, replace the existing entry
+      // Update existing entry
       setJournalEntries(entries => 
         entries.map(e => e.id === entry.id ? entry as JournalEntry : e)
       );
     } else {
-      // This is a new entry
+      // Create new entry
       const newEntry: JournalEntry = {
         ...(entry as Omit<JournalEntry, "id" | "date">),
         id: `j${Date.now()}`,
@@ -269,7 +268,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteJournalEntry = (entryId: string) => {
-    setJournalEntries(entries => entries.filter((entry) => entry.id !== entryId));
+    setJournalEntries(entries => entries.filter(entry => entry.id !== entryId));
   };
 
   // Goal functions
