@@ -31,6 +31,7 @@ const JournalEntryPage: React.FC = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [hasAutoSaved, setHasAutoSaved] = useState(false);
   const isEditing = entryId && entryId !== "new";
 
   // Calculate word and character counts
@@ -42,6 +43,71 @@ const JournalEntryPage: React.FC = () => {
   console.log("🔍 entryId:", entryId);
   console.log("🔍 isEditing:", isEditing);
   console.log("🔍 Current journal entries:", journalEntries);
+
+  // Generate unique untitled name
+  const generateUntitledName = () => {
+    const untitledEntries = journalEntries.filter(entry =>
+      entry.title.startsWith("Untitled")
+    );
+
+    if (untitledEntries.length === 0) {
+      return "Untitled 1";
+    }
+
+    const numbers = untitledEntries
+      .map(entry => {
+        const match = entry.title.match(/Untitled (\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter(num => num > 0);
+
+    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
+    return `Untitled ${maxNumber + 1}`;
+  };
+
+  // Auto-save function
+  const autoSave = () => {
+    console.log("🔍 Auto-save triggered");
+
+    // Don't auto-save if already saved or if there's no content
+    if (hasAutoSaved || (!entry.title.trim() && !entry.content.trim())) {
+      console.log("🔍 Skipping auto-save (already saved or empty)");
+      return;
+    }
+
+    try {
+      if (isEditing) {
+        // Update existing entry
+        const existingEntry = journalEntries.find(e => e.id === entryId);
+        if (existingEntry) {
+          const updatedEntry: JournalEntry = {
+            id: entryId!,
+            title: entry.title.trim() || existingEntry.title,
+            content: entry.content,
+            mood: entry.mood,
+            date: existingEntry.date,
+          };
+          console.log("🔍 Auto-saving existing entry:", updatedEntry);
+          addJournalEntry(updatedEntry);
+        }
+      } else {
+        // Create new entry with auto-generated title
+        const autoTitle = entry.title.trim() || generateUntitledName();
+        const newEntry = {
+          title: autoTitle,
+          content: entry.content,
+          mood: entry.mood,
+        };
+        console.log("🔍 Auto-saving new entry:", newEntry);
+        addJournalEntry(newEntry);
+      }
+
+      setHasAutoSaved(true);
+      console.log("🔍 Auto-save completed");
+    } catch (error) {
+      console.error("🔍 Error during auto-save:", error);
+    }
+  };
 
   // Load existing entry if editing
   useEffect(() => {
@@ -67,6 +133,34 @@ const JournalEntryPage: React.FC = () => {
     }
   }, [entryId, journalEntries, navigate, toast, isEditing, setActiveTab]);
 
+  // Auto-save when navigating away
+  useEffect(() => {
+    return () => {
+      // Component is unmounting (user navigating away)
+      if (!hasAutoSaved && (entry.title.trim() || entry.content.trim())) {
+        console.log("🔍 Component unmounting, triggering auto-save");
+        autoSave();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry, hasAutoSaved]);
+
+  // Auto-save before page unload (closing tab/browser)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasAutoSaved && (entry.title.trim() || entry.content.trim())) {
+        autoSave();
+        // Show browser warning
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry, hasAutoSaved]);
+
   const handleSave = () => {
     console.log("🔍 handleSave called");
     console.log("🔍 Current entry state:", entry);
@@ -81,6 +175,7 @@ const JournalEntryPage: React.FC = () => {
     }
 
     setIsLoading(true);
+    setHasAutoSaved(true); // Mark as saved to prevent auto-save
     console.log("🔍 About to call addJournalEntry");
 
     try {
@@ -91,7 +186,7 @@ const JournalEntryPage: React.FC = () => {
         if (existingEntry) {
           const updatedEntry: JournalEntry = {
             id: entryId!,
-            title: entry.title || "Untitled Entry",
+            title: entry.title.trim() || generateUntitledName(),
             content: entry.content,
             mood: entry.mood,
             date: existingEntry.date, // Keep original date
@@ -107,7 +202,7 @@ const JournalEntryPage: React.FC = () => {
         console.log("🔍 Creating new entry");
         // Create new entry - let the context handle ID and date generation
         const newEntry = {
-          title: entry.title || "Untitled Entry",
+          title: entry.title.trim() || generateUntitledName(),
           content: entry.content,
           mood: entry.mood,
         };
@@ -128,7 +223,7 @@ const JournalEntryPage: React.FC = () => {
         console.log("🔍 Setting active tab to journal");
         setActiveTab("journal");
       }, 100);
-      
+
     } catch (error) {
       console.error("🔍 Error saving journal entry:", error);
       toast({
@@ -143,6 +238,16 @@ const JournalEntryPage: React.FC = () => {
 
   const handleBack = () => {
     console.log("🔍 handleBack called");
+
+    // Auto-save if there's unsaved content
+    if (!hasAutoSaved && (entry.title.trim() || entry.content.trim())) {
+      autoSave();
+      toast({
+        title: "Entry auto-saved",
+        description: `Saved as "${entry.title.trim() || generateUntitledName()}"`,
+      });
+    }
+
     navigate("/");
     // Set the active tab to journal when going back
     setTimeout(() => {
