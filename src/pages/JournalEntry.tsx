@@ -152,158 +152,158 @@ const JournalEntryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-journal-light/10">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-journal-light/5 to-background">
       <Navigation />
-      <div className="p-4 md:p-6 max-w-4xl mx-auto animate-fade-in flex-1 w-full">
-        {/* Header Section */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            className="mb-4 hover:bg-journal-light/20 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Journal
-          </Button>
+      <div className="flex-1 w-full animate-fade-in">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8">
+          {/* Header Section */}
+          <div className="space-y-6">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="hover:bg-journal/10 transition-colors -ml-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Journal
+            </Button>
 
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-journal to-journal-dark shadow-lg">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-journal to-journal-dark bg-clip-text text-transparent">
-                  {isEditing ? "Edit Your Entry" : "New Journal Entry"}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{format(new Date(), "EEEE, MMMM d, yyyy")}</span>
+            <div className="flex items-start justify-between flex-wrap gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2.5 rounded-2xl bg-gradient-to-br from-journal via-journal to-journal-dark shadow-md">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-journal via-journal-dark to-journal bg-clip-text text-transparent">
+                    {isEditing ? "Edit Entry" : "New Entry"}
+                  </h1>
                 </div>
+                <div className="flex items-center gap-2 text-muted-foreground ml-1">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-sm">{format(new Date(), "EEEE, MMMM d, yyyy")}</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-journal to-journal-dark hover:from-journal-dark hover:to-journal shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8"
+                size="lg"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isLoading ? "Saving..." : (isEditing ? "Update" : "Save")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Title Input - Borderless */}
+          <div className="space-y-3">
+            <label htmlFor="title" className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1">
+              Title <span className="text-xs lowercase normal-case">(optional)</span>
+            </label>
+            <Input
+              id="title"
+              placeholder="Give your entry a memorable title..."
+              value={entry.title}
+              onChange={(e) => setEntry({ ...entry, title: e.target.value })}
+              className="text-2xl md:text-3xl font-semibold border-0 border-b-2 border-transparent focus:border-journal bg-transparent hover:bg-journal-light/5 transition-all duration-300 rounded-none px-2 h-auto py-4 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+
+          {/* Mood Selector */}
+          <div className="space-y-4 py-4">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1 block">
+              How are you feeling?
+            </label>
+            <div className="flex gap-3 flex-wrap">
+              {moodOptions.map((mood) => (
+                <button
+                  key={mood.value}
+                  type="button"
+                  onClick={() => setEntry({ ...entry, mood: mood.value })}
+                  className={`
+                    relative px-6 py-3 rounded-full transition-all duration-300
+                    transform hover:scale-110 hover:shadow-lg
+                    ${entry.mood === mood.value
+                      ? `bg-gradient-to-br ${mood.color} text-white shadow-lg scale-105`
+                      : 'bg-journal-light/10 hover:bg-journal-light/20 text-foreground'
+                    }
+                  `}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{mood.emoji}</span>
+                    <span className="text-sm font-medium">
+                      {mood.label}
+                    </span>
+                  </div>
+                  {entry.mood === mood.value && (
+                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+                      <span className="text-xs">✓</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Content Textarea - Full Width, Modern */}
+          <div className="space-y-3 pb-6">
+            <div className="flex items-center justify-between ml-1">
+              <label htmlFor="content" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Your Thoughts
+              </label>
+              <div className="flex items-center gap-4 text-xs">
+                <span className={`transition-colors ${wordCount >= minWords ? 'text-journal font-semibold' : 'text-muted-foreground'}`}>
+                  {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                </span>
+                <span className="text-muted-foreground">
+                  {charCount} characters
+                </span>
               </div>
             </div>
 
-            <Button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="bg-gradient-to-r from-journal to-journal-dark hover:from-journal-dark hover:to-journal shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              size="lg"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {isLoading ? "Saving..." : (isEditing ? "Update Entry" : "Save Entry")}
-            </Button>
-          </div>
-        </div>
+            <div className="relative group">
+              <Textarea
+                id="content"
+                placeholder="Start writing... Let your thoughts flow freely."
+                rows={16}
+                value={entry.content}
+                onChange={(e) => setEntry({ ...entry, content: e.target.value })}
+                className="min-h-[400px] border-0 bg-journal-light/5 hover:bg-journal-light/10 focus:bg-white transition-all duration-300 resize-none text-base leading-relaxed p-6 rounded-2xl focus-visible:ring-2 focus-visible:ring-journal/50 focus-visible:ring-offset-0 shadow-sm hover:shadow-md focus:shadow-lg"
+              />
+              {wordCount < minWords && wordCount > 0 && (
+                <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/95 px-3 py-1.5 rounded-full backdrop-blur-sm shadow-sm">
+                  {minWords - wordCount} more {minWords - wordCount === 1 ? 'word' : 'words'} suggested
+                </div>
+              )}
+            </div>
 
-        {/* Main Card */}
-        <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 border-journal-light/30">
-          <CardHeader className="border-b border-journal-light/20 bg-gradient-to-r from-journal-light/5 to-transparent">
-            <CardTitle className="text-journal flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Capture Your Thoughts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8 pt-6">
-            {/* Title Input */}
-            <div className="space-y-2 group">
-              <label htmlFor="title" className="text-sm font-semibold text-foreground flex items-center gap-2">
-                Title
-                <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
-              </label>
-              <Input
-                id="title"
-                placeholder="Give your entry a memorable title..."
-                value={entry.title}
-                onChange={(e) => setEntry({ ...entry, title: e.target.value })}
-                className="text-lg border-2 focus:border-journal transition-all duration-300 hover:border-journal-light"
+            {/* Progress Bar */}
+            <div className="relative w-full h-1 bg-journal-light/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-journal via-journal-dark to-journal transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${Math.min((wordCount / minWords) * 100, 100)}%` }}
               />
             </div>
+          </div>
 
-            {/* Mood Selector */}
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground block">
-                How are you feeling today?
-              </label>
-              <div className="grid grid-cols-5 gap-3">
-                {moodOptions.map((mood) => (
-                  <button
-                    key={mood.value}
-                    type="button"
-                    onClick={() => setEntry({ ...entry, mood: mood.value })}
-                    className={`
-                      relative p-4 rounded-xl border-2 transition-all duration-300
-                      transform hover:scale-110 hover:shadow-lg
-                      ${entry.mood === mood.value
-                        ? `border-transparent bg-gradient-to-br ${mood.color} text-white shadow-lg scale-105`
-                        : 'border-border hover:border-journal-light bg-card hover:bg-journal-light/5'
-                      }
-                    `}
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-3xl">{mood.emoji}</span>
-                      <span className={`text-xs font-medium ${entry.mood === mood.value ? 'text-white' : 'text-muted-foreground'}`}>
-                        {mood.label}
-                      </span>
-                    </div>
-                    {entry.mood === mood.value && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
-                        <span className="text-lg">✓</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Content Textarea */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="content" className="text-sm font-semibold text-foreground">
-                  Your Thoughts
-                </label>
-                <div className="flex items-center gap-4 text-xs">
-                  <span className={`${wordCount >= minWords ? 'text-journal font-medium' : 'text-muted-foreground'}`}>
-                    {wordCount} {wordCount === 1 ? 'word' : 'words'}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {charCount} {charCount === 1 ? 'character' : 'characters'}
-                  </span>
+          {/* Helpful Tips */}
+          {!entry.content && (
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-journal-light/10 to-transparent backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">💡</span>
+                <div>
+                  <p className="text-sm font-medium text-journal mb-1">Writing prompts to get started:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>What made you smile today?</li>
+                    <li>What challenges did you overcome?</li>
+                    <li>What are you grateful for right now?</li>
+                    <li>What goals are you working towards?</li>
+                  </ul>
                 </div>
               </div>
-              <div className="relative">
-                <Textarea
-                  id="content"
-                  placeholder="Pour your heart out... What's on your mind today?"
-                  rows={12}
-                  value={entry.content}
-                  onChange={(e) => setEntry({ ...entry, content: e.target.value })}
-                  className="min-h-[300px] border-2 focus:border-journal transition-all duration-300 hover:border-journal-light resize-none text-base leading-relaxed"
-                />
-                {wordCount < minWords && wordCount > 0 && (
-                  <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/90 px-2 py-1 rounded-md backdrop-blur-sm">
-                    {minWords - wordCount} more {minWords - wordCount === 1 ? 'word' : 'words'} for a complete entry
-                  </div>
-                )}
-              </div>
-              {/* Progress Bar */}
-              <div className="relative w-full h-1.5 bg-journal-light/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-journal to-journal-dark transition-all duration-500 ease-out rounded-full"
-                  style={{ width: `${Math.min((wordCount / minWords) * 100, 100)}%` }}
-                />
-              </div>
             </div>
-
-            {/* Helpful Tips */}
-            {!entry.content && (
-              <div className="p-4 rounded-lg bg-journal-light/10 border border-journal-light/30">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-journal">💡 Tip:</span> Try writing about your day,
-                  your goals, things you're grateful for, or challenges you're facing. There's no wrong way to journal!
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
     </div>
   );
